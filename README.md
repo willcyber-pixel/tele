@@ -44,7 +44,7 @@ Committed `render.yaml` describes it, or configure manually:
 | Setting | Value |
 | --- | --- |
 | Runtime | Node |
-| Build command | `npm install && npm run build` |
+| Build command | `npm ci --include=dev && npm run build` |
 | Start command | `npm start` |
 | Health check | `/api/sessions` |
 
@@ -54,6 +54,12 @@ no second service to pay for. `ServeStaticModule` is registered only when that
 build directory exists, so running the API alone in development still works.
 
 `PORT` is read from the environment; the server binds `0.0.0.0`.
+
+**`--include=dev` is not optional.** Render sets `NODE_ENV=production`, which
+makes npm default to `omit=dev` — so `@nestjs/cli`, `vite` and `typescript`
+would never be installed, and the build dies with `nest: not found` (exit 127).
+They are genuinely build-time tools, so they belong in devDependencies; the
+install flag is the right fix rather than promoting them to dependencies.
 
 > **SQLite on the free plan is ephemeral.** The container's filesystem resets
 > on every restart and redeploy. The agenda re-seeds itself on boot, so the app

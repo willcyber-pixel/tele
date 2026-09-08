@@ -9,9 +9,13 @@ services:
     plan: free
     region: oregon
 
-    # npm install at the root installs both workspaces; npm run build compiles
-    # the Nest API and then the Vite frontend.
-    buildCommand: npm install && npm run build
+    # --include=dev is required: Render sets NODE_ENV=production, and npm then
+    # defaults to omit=dev, which would skip @nestjs/cli, vite and typescript.
+    # Without it the build dies with "nest: not found" (exit 127).
+    #
+    # npm ci installs both workspaces from the committed lockfile; npm run
+    # build then compiles the Nest API and the Vite frontend.
+    buildCommand: npm ci --include=dev && npm run build
     startCommand: npm start
 
     healthCheckPath: /api/sessions
