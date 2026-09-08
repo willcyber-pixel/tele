@@ -9,13 +9,17 @@
   ],
   "scripts": {
     "dev": "concurrently -n api,web -c cyan,magenta \"npm:dev:api\" \"npm:dev:web\"",
-    "dev:api": "npm run start:dev -w backend",
-    "dev:web": "npm run dev -w frontend",
-    "build": "npm run build -w backend && npm run build -w frontend",
+    "dev:api": "npm run start:dev -w @startfest/api",
+    "dev:web": "npm run dev -w @startfest/web",
+    "build": "npm run build:api && npm run build:web",
+    "build:api": "npm run build -w @startfest/api",
+    "build:web": "npm run build -w @startfest/web",
+    "start": "node backend/dist/main.js",
     "test": "npm run test:api && npm run test:web",
-    "test:api": "npm run test -w backend && npm run test:e2e -w backend",
-    "test:web": "npm run test -w frontend",
-    "start": "node backend/dist/main.js"
+    "test:api": "npm run test -w @startfest/api && npm run test:e2e -w @startfest/api",
+    "test:web": "npm run test -w @startfest/web",
+    "test:unit": "npm run test -w @startfest/api && npm run test -w @startfest/web",
+    "test:e2e": "npm run test:e2e -w @startfest/api"
   },
   "devDependencies": {
     "concurrently": "^9.1.0"

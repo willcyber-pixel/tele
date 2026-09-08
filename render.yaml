@@ -1,0 +1,40 @@
+# Render blueprint — one web service running the API and serving the React build.
+#
+# Two services would mean CORS config and a second URL; the Nest process already
+# serves frontend/dist, so a single service is simpler and fits the free plan.
+services:
+  - type: web
+    name: startfest-scheduler
+    runtime: node
+    plan: free
+    region: oregon
+
+    # npm install at the root installs both workspaces; npm run build compiles
+    # the Nest API and then the Vite frontend.
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+
+    healthCheckPath: /api/sessions
+
+    envVars:
+      - key: NODE_VERSION
+        value: 20.20.2
+      - key: DB_DRIVER
+        value: sqlite
+      # On the free plan there is no persistent disk, so the database lives in
+      # the container's ephemeral filesystem. It re-seeds the full agenda on
+      # every boot; what does NOT survive a restart or redeploy is the picks
+      # people have made. Fine for a POC demo, not for anything real.
+      - key: DB_DATABASE
+        value: /tmp/startfest.sqlite
+
+    # To make picks durable, move to a paid instance and uncomment both the
+    # disk below and the DB_DATABASE override, then remove the /tmp value above.
+    #
+    # - key: DB_DATABASE
+    #   value: /var/data/startfest.sqlite
+    #
+    # disk:
+    #   name: startfest-data
+    #   mountPath: /var/data
+    #   sizeGB: 1

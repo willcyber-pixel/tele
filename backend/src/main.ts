@@ -11,8 +11,11 @@ async function bootstrap() {
   app.enableCors({ origin: true });
 
   const port = Number(process.env.PORT ?? 3000);
-  await app.listen(port);
-  Logger.log(`API listening on http://localhost:${port}/api`, 'Bootstrap');
+
+  // Bind all interfaces: platforms like Render route to the container's
+  // external address, so listening on localhost alone would be unreachable.
+  await app.listen(port, '0.0.0.0');
+  Logger.log(`Listening on port ${port} (API under /api)`, 'Bootstrap');
 }
 
 void bootstrap();
