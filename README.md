@@ -1,13 +1,20 @@
 # StartFEST Scheduler (POC)
 
-Conference scheduling app for the StartFEST 2026 agenda. React frontend,
-NestJS + SQLite backend.
+Conference scheduling app for the StartFEST 2026 agenda. npm-workspaces
+monorepo: React frontend, NestJS + SQLite backend.
+
+```
+.
+├── frontend/   @startfest/web   React 18 + Vite
+├── backend/    @startfest/api   NestJS 10 + TypeORM + SQLite
+└── render.yaml                  single-service deploy blueprint
+```
 
 ## Running it
 
 ```bash
-npm run install:all     # install both projects
-npm run dev             # API on :3000, web on :5173
+npm install     # installs both workspaces from the root
+npm run dev     # API on :3000, web on :5173
 ```
 
 Open http://localhost:5173. The Vite dev server proxies `/api` to the backend,
@@ -16,13 +23,45 @@ so there is no base URL or CORS configuration to set.
 The database seeds itself on first boot — 38 agenda items, 21 attendees, and a
 stable set of fabricated attendance rows.
 
-## Testing
+## Scripts
 
-```bash
-npm test            # everything
-npm run test:api    # backend unit + e2e
-npm run test:web    # frontend unit + integration
-```
+| Script | Does |
+| --- | --- |
+| `npm install` | Installs both workspaces (one lockfile at the root) |
+| `npm run dev` | Both dev servers, concurrently |
+| `npm run build` | Builds API then frontend |
+| `npm start` | Runs the built API, which also serves the built frontend |
+| `npm test` | Everything — 250 tests |
+| `npm run test:unit` | Unit tests only, both sides |
+| `npm run test:e2e` | Backend e2e against real SQLite |
+
+Per-workspace: `npm run <script> -w @startfest/api` (or `@startfest/web`).
+
+## Deploying to Render
+
+Committed `render.yaml` describes it, or configure manually:
+
+| Setting | Value |
+| --- | --- |
+| Runtime | Node |
+| Build command | `npm install && npm run build` |
+| Start command | `npm start` |
+| Health check | `/api/sessions` |
+
+**One service, not two.** In production the Nest process serves the React build
+out of `frontend/dist` alongside the API, so there is one origin, no CORS, and
+no second service to pay for. `ServeStaticModule` is registered only when that
+build directory exists, so running the API alone in development still works.
+
+`PORT` is read from the environment; the server binds `0.0.0.0`.
+
+> **SQLite on the free plan is ephemeral.** The container's filesystem resets
+> on every restart and redeploy. The agenda re-seeds itself on boot, so the app
+> always comes up fully populated — but **picks people made are lost**. That is
+> an acceptable trade for a demo; for anything real, attach a Render persistent
+> disk (the commented block in `render.yaml`) or move to Postgres/MSSQL.
+
+## Testing
 
 | Suite | Tests | What it covers |
 | --- | --- | --- |
@@ -96,6 +135,20 @@ top-right corner, three visible plus a `+N` chip, click for the full roster.
 Colour is hashed from the attendee id, so a person is the same colour
 everywhere. Rosters are fetched in one batched request rather than one per
 card.
+
+## API
+
+| Method | Route | Purpose |
+| --- | --- | --- |
+| `GET` | `/api/sessions?day=1` | Agenda, optionally filtered |
+| `GET` | `/api/sessions/:id` | One session |
+| `GET` | `/api/sessions/:id/attendees` | Who is going |
+| `GET` | `/api/attendees/by-session?ids=a,b,c` | Batched rosters |
+| `GET` | `/api/schedule/:attendeeId` | A personal schedule |
+| `POST` | `/api/schedule/:attendeeId/sessions/:id` | Add a pick (idempotent) |
+| `DELETE` | `/api/schedule/:attendeeId/sessions/:id` | Remove a pick |
+| `GET` | `/api/schedule/:attendeeId/conflicts` | Detected conflicts |
+| `GET` | `/api/schedule/:attendeeId/calendar.ics` | Calendar download |
 
 ## Switching to MSSQL
 

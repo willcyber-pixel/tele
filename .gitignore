@@ -8,3 +8,6 @@ coverage
 .env.local
 *.local
 .DS_Store
+
+# Claude Code per-machine settings
+.claude/settings.local.json
