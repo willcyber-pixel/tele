@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(node -v)",
+      "PowerShell(npm -v)",
+      "PowerShell(winget install --id OpenJS.NodeJS.LTS -v 20.19.5 --source winget --accept-package-agreements --accept-source-agreements --silent --disable-interactivity)",
+      "PowerShell(winget show --id OpenJS.NodeJS.LTS --versions --source winget --accept-source-agreements)"
+    ]
+  }
+}

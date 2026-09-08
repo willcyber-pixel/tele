@@ -1,0 +1,26 @@
+{
+  "name": "startfest-scheduler",
+  "private": true,
+  "version": "0.1.0",
+  "description": "StartFEST 2026 conference scheduler POC - React frontend, NestJS + SQLite backend",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "concurrently -n api,web -c cyan,magenta \"npm:dev:api\" \"npm:dev:web\"",
+    "dev:api": "npm run start:dev -w backend",
+    "dev:web": "npm run dev -w frontend",
+    "build": "npm run build -w backend && npm run build -w frontend",
+    "test": "npm run test:api && npm run test:web",
+    "test:api": "npm run test -w backend && npm run test:e2e -w backend",
+    "test:web": "npm run test -w frontend",
+    "start": "node backend/dist/main.js"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
